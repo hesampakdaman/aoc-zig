@@ -1,12 +1,12 @@
 const std = @import("std");
+const utils = @import("utils.zig");
 const Solution = @import("../solution.zig").Solution;
 
 pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
-    const tick = try std.time.Instant.now();
-
-    const parsed = try GiftBox.parseMany(allocator, input);
+    const parsed = try BoxDim.parse(allocator, input);
     defer allocator.free(parsed);
 
+    const tick = try std.time.Instant.now();
     const p1 = part1(parsed);
     const p2 = part2(parsed);
 
@@ -22,63 +22,63 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     );
 }
 
-fn part1(dims: []const GiftBox) u32 {
+fn part1(dims: []const BoxDim) u32 {
     var paper: u32 = 0;
     for (dims) |dim| {
-        const area = (2 * dim.length * dim.width) + (2 * dim.width * dim.height) + (2 * dim.height * dim.length);
-        const slack = @min(dim.length * dim.width, @min(dim.width * dim.height, dim.height * dim.length));
+        const area = 2 * (dim.min * dim.mid + dim.mid * dim.max + dim.max * dim.min);
+        const slack = dim.min * dim.mid;
         paper += area + slack;
     }
     return paper;
 }
 
-test "part1" {
-    const dims = [_]GiftBox{GiftBox{ .length = 2, .width = 3, .height = 4 }};
-    try std.testing.expectEqual(58, part1(&dims));
-}
-
-fn part2(input: []const GiftBox) u32 {
+fn part2(input: []const BoxDim) u32 {
     var ribbon: u32 = 0;
     for (input) |box| {
-        const cubic = box.width * box.length * box.height;
+        const cubic = box.mid * box.min * box.max;
 
-        const min = @min(box.width, box.length, box.height);
-        const max = @max(box.width, box.length, box.height);
-        const mid = box.width + box.length + box.height - (max + min);
-        const perimiter = 2 * (mid + min);
+        const perimiter = 2 * (box.mid + box.min);
 
         ribbon += cubic + perimiter;
     }
     return ribbon;
 }
 
-test "part2" {
-    const dims = [_]GiftBox{GiftBox{ .length = 2, .width = 3, .height = 4 }};
-    try std.testing.expectEqual(34, part2(&dims));
-}
+const BoxDim = struct {
+    min: u32,
+    mid: u32,
+    max: u32,
 
-const GiftBox = struct {
-    length: u32,
-    width: u32,
-    height: u32,
+    fn parse(allocator: std.mem.Allocator, input: []const u8) ![]BoxDim {
+        const numbers = utils.parseNumbers(5000, input);
 
-    fn parseMany(allocator: std.mem.Allocator, input: []const u8) ![]GiftBox {
-        var dims = std.ArrayList(GiftBox).init(allocator);
-        defer dims.deinit();
+        var boxes = try allocator.alloc(BoxDim, numbers.len / 3);
+        var it = std.mem.window(u32, numbers, 3, 3);
+        var idx: usize = 0;
 
-        var lines = std.mem.splitSequence(u8, input, "\n");
-        while (lines.next()) |line| {
-            if (line.len == 0) continue;
-            try dims.append(try GiftBox.parseLine(line));
+        while (it.next()) |chunk| {
+            var dims: [3]u32 = undefined;
+            std.mem.copyForwards(u32, &dims, chunk);
+            std.mem.sort(u32, &dims, {}, std.sort.asc(u32));
+
+            boxes[idx] = BoxDim{
+                .min = dims[0],
+                .mid = dims[1],
+                .max = dims[2],
+            };
+
+            idx += 1;
         }
-        return try dims.toOwnedSlice();
-    }
-
-    fn parseLine(line: []const u8) !GiftBox {
-        var it = std.mem.splitSequence(u8, line, "x");
-        const l = std.fmt.parseInt(u32, it.next() orelse return error.InvalidInput, 10) catch return error.InvalidInput;
-        const w = std.fmt.parseInt(u32, it.next() orelse return error.InvalidInput, 10) catch return error.InvalidInput;
-        const h = std.fmt.parseInt(u32, it.next() orelse return error.InvalidInput, 10) catch return error.InvalidInput;
-        return GiftBox{ .length = l, .width = w, .height = h };
+        return boxes;
     }
 };
+
+test "part1" {
+    const dims = [_]BoxDim{BoxDim{ .min = 2, .mid = 3, .max = 4 }};
+    try std.testing.expectEqual(58, part1(&dims));
+}
+
+test "part2" {
+    const dims = [_]BoxDim{BoxDim{ .min = 2, .mid = 3, .max = 4 }};
+    try std.testing.expectEqual(34, part2(&dims));
+}
