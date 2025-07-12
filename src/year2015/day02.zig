@@ -22,8 +22,8 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     );
 }
 
-fn part1(dims: []const BoxDim) u32 {
-    var paper: u32 = 0;
+fn part1(dims: []const BoxDim) u64 {
+    var paper: u64 = 0;
     for (dims) |dim| {
         const area = 2 * (dim.min * dim.mid + dim.mid * dim.max + dim.max * dim.min);
         const slack = dim.min * dim.mid;
@@ -32,8 +32,8 @@ fn part1(dims: []const BoxDim) u32 {
     return paper;
 }
 
-fn part2(input: []const BoxDim) u32 {
-    var ribbon: u32 = 0;
+fn part2(input: []const BoxDim) u64 {
+    var ribbon: u64 = 0;
     for (input) |box| {
         const cubic = box.mid * box.min * box.max;
 
@@ -45,21 +45,23 @@ fn part2(input: []const BoxDim) u32 {
 }
 
 const BoxDim = struct {
-    min: u32,
-    mid: u32,
-    max: u32,
+    min: u64,
+    mid: u64,
+    max: u64,
 
     fn parse(allocator: std.mem.Allocator, input: []const u8) ![]BoxDim {
-        const numbers = utils.parseNumbers(5000, input);
+        var buf: [5000]u64 = undefined;
+        const read = utils.parseNumbers(&buf, input);
+        const numbers = buf[0..read];
 
         var boxes = try allocator.alloc(BoxDim, numbers.len / 3);
-        var it = std.mem.window(u32, numbers, 3, 3);
+        var it = std.mem.window(u64, numbers, 3, 3);
         var idx: usize = 0;
 
         while (it.next()) |chunk| {
-            var dims: [3]u32 = undefined;
-            std.mem.copyForwards(u32, &dims, chunk);
-            std.mem.sort(u32, &dims, {}, std.sort.asc(u32));
+            var dims: [3]u64 = undefined;
+            std.mem.copyForwards(u64, &dims, chunk);
+            std.mem.sort(u64, &dims, {}, std.sort.asc(u64));
 
             boxes[idx] = BoxDim{
                 .min = dims[0],
