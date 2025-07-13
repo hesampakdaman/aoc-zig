@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn parseNumbers(buffer: []u64, input: []const u8) usize {
+pub fn parseU64(buffer: []u64, input: []const u8) ![]u64 {
     var count: usize = 0;
     var i: usize = 0;
 
@@ -20,8 +20,8 @@ pub fn parseNumbers(buffer: []u64, input: []const u8) usize {
             buffer[count] = num;
             count += 1;
         } else {
-            @panic("Too many numbers in input string (overflowed fixed array)");
+            return error.OutOfMemory;
         }
     }
-    return count;
+    return buffer[0..count];
 }
