@@ -5,11 +5,11 @@ const Solution = @import("../solution.zig").Solution;
 pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     const tick = try std.time.Instant.now();
 
-    var boxes: [3000]BoxDim = undefined;
-    const parsed = try BoxDim.parse_fast(&boxes, input);
+    var boxes: [1000]Box = undefined;
+    try Box.parse(&boxes, input);
 
-    const p1 = part1(parsed);
-    const p2 = part2(parsed);
+    const p1 = part1(&boxes);
+    const p2 = part2(&boxes);
 
     const tock = try std.time.Instant.now();
 
@@ -23,7 +23,7 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     );
 }
 
-fn part1(dims: []const BoxDim) u64 {
+fn part1(dims: []const Box) u64 {
     var paper: u64 = 0;
     for (dims) |dim| {
         const area = 2 * (dim.min * dim.mid + dim.mid * dim.max + dim.max * dim.min);
@@ -33,7 +33,7 @@ fn part1(dims: []const BoxDim) u64 {
     return paper;
 }
 
-fn part2(input: []const BoxDim) u64 {
+fn part2(input: []const Box) u64 {
     var ribbon: u64 = 0;
     for (input) |box| {
         const cubic = box.mid * box.min * box.max;
@@ -43,60 +43,34 @@ fn part2(input: []const BoxDim) u64 {
     return ribbon;
 }
 
-const BoxDim = struct {
+const Box = struct {
     min: u64,
     mid: u64,
     max: u64,
 
-    fn parse_fast(boxes: []BoxDim, input: []const u8) ![]BoxDim {
-        var i: usize = 0; // index in input
-        var b: usize = 0; // index in boxes
+    fn parse(boxes: []Box, input: []const u8) !void {
+        var buf: [3000]u64 = undefined;
+        const read = try utils.parseU64s(&buf, input);
+        const numbers = buf[0..read];
 
-        while (i < input.len) {
-            // Parse first number
-            var n1: u64 = 0;
-            while (i < input.len and input[i] >= '0' and input[i] <= '9') : (i += 1) {
-                n1 = n1 * 10 + (input[i] - '0');
-            }
-            if (i >= input.len or input[i] != 'x') return error.InvalidFormat;
-            i += 1; // skip 'x'
-
-            // Parse second number
-            var n2: u64 = 0;
-            while (i < input.len and input[i] >= '0' and input[i] <= '9') : (i += 1) {
-                n2 = n2 * 10 + (input[i] - '0');
-            }
-            if (i >= input.len or input[i] != 'x') return error.InvalidFormat;
-            i += 1; // skip 'x'
-
-            // Parse third number
-            var n3: u64 = 0;
-            while (i < input.len and input[i] >= '0' and input[i] <= '9') : (i += 1) {
-                n3 = n3 * 10 + (input[i] - '0');
-            }
-            // Next char must be '\n' or end of input
-            if (i < input.len and (input[i] != '\n' and input[i] != '\r')) return error.InvalidFormat;
-            if (i < input.len and (input[i] == '\n' or input[i] == '\r')) i += 1;
-
-            // Calculate min, mid, max
-            const min = @min(n1, @min(n2, n3));
-            const max = @max(n1, @max(n2, n3));
-            const mid = n1 + n2 + n3 - min - max;
-
-            if (b >= boxes.len) return error.OutOfMemory;
-            boxes[b] = BoxDim{ .min = min, .mid = mid, .max = max };
-            b += 1;
+        var it = std.mem.window(u64, numbers, 3, 3);
+        var i: usize = 0;
+        while (it.next()) |chunk| {
+            const min = @min(chunk[0], chunk[1], chunk[2]);
+            const max = @max(chunk[0], chunk[1], chunk[2]);
+            const mid = chunk[0] + chunk[1] + chunk[2] - min - max;
+            boxes[i] = .{ .min = min, .mid = mid, .max = max };
+            i += 1;
         }
-        return boxes[0..b];
     }
 };
 
 test "part1" {
-    const dims = [_]BoxDim{BoxDim{ .min = 2, .mid = 3, .max = 4 }};
+    const dims = [_]Box{Box{ .min = 2, .mid = 3, .max = 4 }};
     try std.testing.expectEqual(58, part1(&dims));
 }
 
 test "part2" {
-    const dims = [_]BoxDim{BoxDim{ .min = 2, .mid = 3, .max = 4 }};
+    const dims = [_]Box{Box{ .min = 2, .mid = 3, .max = 4 }};
     try std.testing.expectEqual(34, part2(&dims));
 }
