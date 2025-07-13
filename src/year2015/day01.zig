@@ -20,30 +20,28 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
 }
 
 fn part1(input: []const u8) i32 {
-    var ans: i32 = 0;
+    var floor: i32 = 0;
     for (input) |char| {
-        if (char == '(') {
-            ans += 1;
-        } else if (char == ')') {
-            ans -= 1;
-        }
+        floor += nextFloor(char);
     }
-    return ans;
+    return floor;
 }
 
 fn part2(input: []const u8) usize {
-    var ans: i32 = 0;
-    for (input, 1..) |char, position| {
-        if (char == '(') {
-            ans += 1;
-        } else if (char == ')') {
-            ans -= 1;
-        }
-        if (ans == -1) {
-            return position;
-        }
+    var floor: i32 = 0;
+    for (1.., input) |basement_idx, char| {
+        if (floor == -1) return basement_idx;
+        floor += nextFloor(char);
     }
     return 0;
+}
+
+inline fn nextFloor(paren: u8) i32 {
+    // '(' == 40 and ')' == 41.
+    const asciiValue: i32 = @intCast(paren);
+    // '(' => 81 - 2*40 = 1.
+    // ')' => 81 - 2*41 = -1.
+    return 81 - 2 * asciiValue;
 }
 
 test "part1" {
