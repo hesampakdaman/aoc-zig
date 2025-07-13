@@ -7,7 +7,6 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
 
     var boxes: [1000]Box = undefined;
     try Box.parse(&boxes, input);
-
     const p1 = part1(&boxes);
     const p2 = part2(&boxes);
 
@@ -15,7 +14,6 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
 
     const p1_str = try std.fmt.allocPrint(allocator, "{}", .{p1});
     const p2_str = try std.fmt.allocPrint(allocator, "{}", .{p2});
-
     return Solution.init(
         p1_str,
         p2_str,

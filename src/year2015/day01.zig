@@ -11,7 +11,6 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
 
     const p1_str = try std.fmt.allocPrint(allocator, "{}", .{p1});
     const p2_str = try std.fmt.allocPrint(allocator, "{}", .{p2});
-
     return Solution.init(
         p1_str,
         p2_str,
@@ -38,10 +37,10 @@ fn part2(input: []const u8) usize {
 
 inline fn nextFloor(paren: u8) i32 {
     // '(' == 40 and ')' == 41.
-    const asciiValue: i32 = @intCast(paren);
+    const ascii_value: i32 = @intCast(paren);
     // '(' => 81 - 2*40 = 1.
     // ')' => 81 - 2*41 = -1.
-    return 81 - 2 * asciiValue;
+    return 81 - 2 * ascii_value;
 }
 
 test "part1" {
