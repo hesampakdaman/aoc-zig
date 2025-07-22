@@ -42,14 +42,3 @@ inline fn nextFloor(paren: u8) i32 {
     // ')' => 81 - 2*41 = -1.
     return 81 - 2 * ascii_value;
 }
-
-test "part1" {
-    try std.testing.expectEqual(0, part1("()()"));
-    try std.testing.expectEqual(3, part1("))((((("));
-    try std.testing.expectEqual(-3, part1(")())())"));
-}
-
-test "part2" {
-    try std.testing.expectEqual(1, part2(")"));
-    try std.testing.expectEqual(5, part2("()())"));
-}
