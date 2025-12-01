@@ -12,6 +12,5 @@ pub fn run(allocator: std.mem.Allocator, day: u8, input: []const u8) !void {
 }
 
 test {
-    _ = day01;
     std.testing.refAllDecls(@This());
 }
