@@ -1,5 +1,6 @@
 const std = @import("std");
 const year2015 = @import("year2015/main.zig");
+const year2025 = @import("year2025/main.zig");
 
 pub fn main() !void {
     const args = std.process.args();
@@ -23,16 +24,15 @@ pub fn main() !void {
     const day = try std.fmt.parseInt(u8, day_str, 10);
 
     var buf: [65536]u8 = undefined;
-    const len = try std.io.getStdIn().readAll(&buf);
+    const len = try std.fs.File.stdin().readAll(&buf);
     const input = buf[0..len];
 
     switch (year) {
         2015 => try year2015.run(allocator, day, input),
+        2025 => try year2025.run(allocator, day, input),
         else => std.debug.print("Unknown year: {}\n", .{year}),
     }
 }
-
-const _ = year2015;
 
 test {
     std.testing.refAllDecls(@This());
