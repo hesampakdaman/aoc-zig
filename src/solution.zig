@@ -14,7 +14,7 @@ pub const Solution = struct {
     }
 
     pub fn print(self: Solution) void {
-        const ms = @as(f64, @floatFromInt(self.duration_ns)) / 1_000_000.0;
-        std.debug.print("Part 1: {s}\nPart 2: {s}\nTime: {d} ms\n", .{ self.p1, self.p2, ms });
+        const us = @as(f64, @floatFromInt(self.duration_ns)) / 1_000.0;
+        std.debug.print("Part 1: {s}\nPart 2: {s}\nTime: {d} μs\n", .{ self.p1, self.p2, us });
     }
 };
