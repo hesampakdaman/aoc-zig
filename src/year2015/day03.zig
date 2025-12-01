@@ -1,4 +1,5 @@
 const std = @import("std");
+
 const Solution = @import("../solution.zig").Solution;
 
 pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
@@ -8,7 +9,8 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     try set.ensureTotalCapacity(@intCast(input.len));
 
     const p1 = try part1(&set, input);
-    const p2 = 3;
+    set.clearRetainingCapacity();
+    const p2 = try part2(&set, input);
 
     const tock = try std.time.Instant.now();
 
@@ -24,21 +26,46 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
 const Empty = struct {};
 const Set = std.AutoHashMap([2]i32, Empty);
 
-fn part1(set: *Set, input: []const u8) !usize {
+fn part1(set: *Set, directions: []const u8) !usize {
     var houses: usize = 0;
     var pos: [2]i32 = .{ 0, 0 };
 
-    for (input) |dir| {
+    for (directions) |dir| {
         if (set.get(pos) == null) {
             houses += 1;
             try set.put(pos, Empty{});
         }
-        switch (dir) {
-            '>' => pos = .{ pos[0] + 1, pos[1] },
-            '<' => pos = .{ pos[0] - 1, pos[1] },
-            '^' => pos = .{ pos[0], pos[1] + 1 },
-            else => pos = .{ pos[0], pos[1] - 1 },
-        }
+        advance(&pos, dir);
     }
     return houses;
+}
+
+fn part2(set: *Set, directions: []const u8) !usize {
+    var houses: usize = 0;
+    var santa: [2]i32 = .{ 0, 0 };
+    var robot: [2]i32 = .{ 0, 0 };
+
+    var it = std.mem.window(u8, directions, 2, 2);
+    while (it.next()) |chunk| {
+        if (set.get(santa) == null) {
+            houses += 1;
+            try set.put(santa, Empty{});
+        }
+        if (set.get(robot) == null) {
+            houses += 1;
+            try set.put(robot, Empty{});
+        }
+        advance(&santa, chunk[0]);
+        advance(&robot, chunk[1]);
+    }
+    return houses;
+}
+
+inline fn advance(pos: *[2]i32, dir: u8) void {
+    switch (dir) {
+        '>' => pos[0] += 1,
+        '<' => pos[0] -= 1,
+        '^' => pos[1] += 1,
+        else => pos[1] -= 1,
+    }
 }
