@@ -1,4 +1,4 @@
 .PHONY: test
 
 test:
-	zig build test --watch --prominent-compile-errors
+	zig build test --watch --prominent-compile-errors -fincremental
