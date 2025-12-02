@@ -8,7 +8,7 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     const product_ids = try parse(allocator, input);
 
     const p1 = part1(product_ids);
-    const p2 = part2(product_ids);
+    const p2 = try part2(product_ids);
 
     const tock = try std.time.Instant.now();
 
@@ -45,8 +45,36 @@ fn part1(input: ArrayList([2]usize)) usize {
     return sum;
 }
 
-fn part2(_: ArrayList([2]usize)) i32 {
-    return 0;
+fn part2(input: ArrayList([2]usize)) !usize {
+    var sum: usize = 0;
+
+    for (input.items) |range| {
+        for (range[0]..range[1] + 1) |n| {
+            var buf: [32]u8 = undefined;
+            const s = try std.fmt.bufPrint(&buf, "{}", .{n});
+
+            for (1..(s.len / 2) + 1) |p| {
+                if (s.len % p != 0) continue;
+                const block = s[0..p];
+
+                var ok = true;
+                var i: usize = p;
+                while (i < s.len) : (i += p) {
+                    if (!std.mem.eql(u8, block, s[i .. i + p])) {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok) {
+                    if ((s.len / p) >= 2) sum += n;
+                    break;
+                }
+            }
+        }
+    }
+
+    return sum;
 }
 
 fn numDigits(n: usize) usize {
