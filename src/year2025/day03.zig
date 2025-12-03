@@ -47,21 +47,40 @@ fn part1(input: ArrayList([]const u8)) usize {
     return sum;
 }
 
-fn part2(_: ArrayList([]const u8)) usize {}
+fn part2(input: ArrayList([]const u8)) usize {
+    var sum: usize = 0;
+    for (input.items) |battery| {
+        var total: usize = 0;
+        var jolt = findJolt(battery, 0, battery.len - 11);
+        total += jolt.digit - '0';
+        for (1..12) |i| {
+            jolt = findJolt(battery, jolt.at + 1, battery.len - (11 - i));
+            total *= 10;
+            total += jolt.digit - '0';
+        }
+        sum += total;
+    }
+    return sum;
+}
 
-fn findJolt(battery: []const u8, from: usize, to: usize) [2]u8 {
+const Jolt = struct {
+    digit: u8,
+    at: usize,
+};
+
+fn findJolt(battery: []const u8, from: usize, to: usize) Jolt {
     var digit: u8 = '0';
-    var idx: usize = 0;
+    var at: usize = 0;
 
     for (from..to) |i| {
         if (digit == '9') break;
         if (battery[i] > digit) {
             digit = battery[i];
-            idx = i;
+            at = i;
         }
     }
 
-    return .{ digit, idx };
+    return Jolt{ .digit = digit, .at = at };
 }
 
 fn parse(alloc: std.mem.Allocator, input: []const u8) !ArrayList([]const u8) {
