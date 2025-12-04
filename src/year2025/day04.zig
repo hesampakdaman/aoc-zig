@@ -38,9 +38,8 @@ fn part2(allocator: std.mem.Allocator, input: [][]const u8) !usize {
 
     var grid = try allocator.alloc([]u8, rows);
     for (input, 0..) |line, r| {
-        const len = line.len;
-        grid[r] = try allocator.alloc(u8, len);
-        std.mem.copyForwards(u8, grid[r], line);
+        const row = try allocator.dupe(u8, line);
+        grid[r] = row;
     }
 
     var done = false;
