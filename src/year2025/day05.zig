@@ -8,7 +8,7 @@ pub fn solve(allocator: std.mem.Allocator, input: []const u8) !Solution {
     const data = try parse(allocator, input);
 
     const p1 = part1(data.range, data.ingridients);
-    const p2: usize = 0;
+    const p2 = try part2(allocator, data.range);
 
     const tock = try std.time.Instant.now();
 
@@ -34,10 +34,66 @@ fn part1(ranges: []Range, ingridients: []usize) usize {
     return fresh;
 }
 
+fn part2(allocator: std.mem.Allocator, ranges: []Range) !usize {
+    var fresh: usize = 0;
+
+    var covered = try allocator.alloc(bool, ranges.len);
+    @memset(covered, false);
+
+    for (0..ranges.len) |i| {
+        if (covered[i]) continue;
+        if (i + 1 < ranges.len and encapsulated(ranges[i], ranges[i + 1 ..])) {
+            covered[i] = true;
+            continue;
+        }
+
+        const a = ranges[i];
+        for (i + 1..ranges.len) |j| {
+            if (covered[j]) continue;
+
+            var b = &ranges[j];
+            if (a.fullyCovers(b.*)) {
+                covered[j] = true;
+            } else if (a.leftOverlap(b.*)) {
+                b.start = a.end + 1;
+                if (b.start > b.end) covered[j] = true;
+            } else if (a.rightOverlap(b.*)) {
+                b.end = a.start - 1;
+                if (b.end < b.start) covered[j] = true;
+            }
+        }
+        fresh += a.size();
+    }
+    return fresh;
+}
+
 const Range = struct {
     start: usize,
     end: usize,
+
+    pub fn size(self: Range) usize {
+        return self.end - self.start + 1;
+    }
+
+    pub fn fullyCovers(self: Range, other: Range) bool {
+        return (self.start <= other.start and other.end <= self.end);
+    }
+
+    pub fn leftOverlap(self: Range, b: Range) bool {
+        return self.end >= b.start and self.end <= b.end;
+    }
+
+    pub fn rightOverlap(self: Range, b: Range) bool {
+        return self.start >= b.start and self.start <= b.end;
+    }
 };
+
+fn encapsulated(a: Range, ranges: []Range) bool {
+    for (ranges) |b| {
+        if (b.fullyCovers(a)) return true;
+    }
+    return false;
+}
 
 fn parse(allocator: std.mem.Allocator, input: []const u8) !struct { range: []Range, ingridients: []usize } {
     var n_ranges: usize = 0;
