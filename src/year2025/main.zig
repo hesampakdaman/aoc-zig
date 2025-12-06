@@ -4,6 +4,7 @@ const day02 = @import("day02.zig");
 const day03 = @import("day03.zig");
 const day04 = @import("day04.zig");
 const day05 = @import("day05.zig");
+const day06 = @import("day06.zig");
 
 pub fn run(allocator: std.mem.Allocator, day: u8, input: []const u8) !void {
     switch (day) {
@@ -25,6 +26,10 @@ pub fn run(allocator: std.mem.Allocator, day: u8, input: []const u8) !void {
         },
         5 => {
             const sol = try day05.solve(allocator, input);
+            sol.print();
+        },
+        6 => {
+            const sol = try day06.solve(allocator, input);
             sol.print();
         },
         else => std.debug.print("Unknown day for 2015: {}\n", .{day}),
